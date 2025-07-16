@@ -1,0 +1,285 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "id": "f0a52864-e423-475f-828f-a6b73afc7af5",
+      "name": "WhatsApp Trigger",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "position": [
+        -480,
+        400
+      ],
+      "webhookId": "aaa71f03-f7af-4d18-8d9a-0afb86f1b554",
+      "typeVersion": 1,
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "B4u3bNZKl3O7QIJT",
+          "name": "WhatsApp OAuth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=whatsapp-75-{{ $json.messages[0].from }}"
+      },
+      "id": "80f30f74-23eb-46c7-85ab-394bcb0a2348",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        160,
+        704
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "685238874678810",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {
+          "previewUrl": false
+        }
+      },
+      "id": "75b41a44-203d-43e2-aad3-367a4714f574",
+      "name": "Reply To User",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        576,
+        464
+      ],
+      "typeVersion": 1,
+      "webhookId": "8062a1e6-7b04-414e-aa9e-d5e547142a0c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "UTRVl21qvTlEJTVD",
+          "name": "WhatsApp account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "477115632141067",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "=I'm unable to process non-text messages. Please send only text messages. Thanks!",
+        "additionalFields": {
+          "previewUrl": false
+        }
+      },
+      "id": "c2d2255a-a53b-4d34-9ef6-50f7a6d91507",
+      "name": "Reply To User1",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        -80,
+        848
+      ],
+      "typeVersion": 1,
+      "webhookId": "5305afe7-4272-4482-b382-7a96b9bba8b7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "fhrjP8lXCBc9KYFE",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Want to handle all message types?\nCheck out my other WhatsApp template in my creator page! https://n8n.io/creators/jimleuk/",
+        "height": 92,
+        "width": 338
+      },
+      "id": "70ac3ea8-260d-456d-bcdf-fdd09fba29c9",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        1072
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "text"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Supported"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "89971d8c-a386-4e77-8f6c-f491a8e84cb6",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "text"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Not Supported"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5a02321-7578-43ee-96fa-738fd51b85f9",
+      "name": "Handle Message Types",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -288,
+        416
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "You are an AI Patient Intake Assistant. Your primary goal is to gather comprehensive patient information by asking a series of questions, categorized as follows: Personal Info, Medical History, Current Condition, Insurance Details, Emergency Contact, and Consent & Legal.\n\nYour process should be as follows:\n\nAlways introduce yourself and explain your purpose (patient intake).\n\nGo through each category sequentially.\n\nFor each category, ask for all the relevant fields listed in the image.\n\nPersonal Info: Name, Date of Birth (DOB), Age, Gender, Phone, Email, Address.\n\nMedical History: Chronic Illnesses, Surgeries, Allergies, Medications.\n\nCurrent Condition: Symptoms, Duration, Pain Level.\n\nInsurance Details: Insurance Provider, Policy Number (No.), Validity, Authorization.\n\nEmergency Contact: Name, Phone, Relation.\n\nConsent & Legal: Terms Acceptance, E-signature, GDPR/HIPAA compliance.\n\nBe specific in your questions. For example, instead of just \"What's your medical history?\", ask \"Do you have any chronic illnesses? Have you had any surgeries? Do you have any allergies? What medications are you currently taking?\"\n\nConfirm information: After a user provides details for a category, briefly summarize what you've understood and ask for confirmation before moving to the next category.\n\nHandle missing information: If a user skips a field or provides incomplete information, politely prompt them to provide it.\n\nMaintain a polite and professional tone throughout the interaction.\n\nDo not proceed to the next category until the current one is sufficiently covered and confirmed.\n\nOnce all categories are complete, offer a final summary of all collected information and ask for a final confirmation.\n\nConclude the intake process by thanking the user.\n\nExample interaction flow (internal thought process for you):\n\nInitial thought: \"Start with Personal Info.\"\n\nQuestion: \"Let's start with some personal information. Could you please tell me your full name, date of birth, age, and gender?\"\n\nUser provides data.\n\nConfirmation: \"Thank you. Just to confirm, your name is [Name], DOB [DOB], age [Age], and gender [Gender]. Is that correct?\"\n\nUser confirms or corrects.\n\nNext question for Personal Info: \"Great. Now, could you also provide your phone number, email address, and full residential address?\"\n\nUser provides data.\n\nConfirmation: \"So your phone is [Phone], email is [Email], and address is [Address]. Correct?\"\n\nUser confirms.\n\nInternal thought: \"Personal Info complete. Move to Medical History.\"\n\nTransition: \"Alright, let's move on to your medical history...\"\n\nYour responses should be clear, concise, and guide the user through the intake process smoothly."
+        }
+      },
+      "id": "c356de21-d03c-4817-8051-6d2d39a86c0f",
+      "name": "AI Sales Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        48,
+        400
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        688
+      ],
+      "id": "b01efbdf-1436-496c-9145-12abd7b012d2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "UP4mCrRGQdgHz5Oq",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Sales Agent": {
+      "main": [
+        [
+          {
+            "node": "Reply To User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Handle Message Types",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Message Types": {
+      "main": [
+        [
+          {
+            "node": "AI Sales Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply To User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Sales Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Sales Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "accd0fd4-f70f-445f-a885-ab3caf2cb229",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17b089a02dd3dc6c436f920004f93fdf333f29c1752617853d332e49f95e96eb"
+  },
+  "id": "SXyr7IZBRTbgoDFv",
+  "tags": []
+}

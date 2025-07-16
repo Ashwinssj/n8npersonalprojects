@@ -1,0 +1,346 @@
+{
+  "name": "doctor appointment rescheduled",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        20,
+        100
+      ],
+      "id": "7b3cee20-971a-46da-b6c0-6f928a1a87d9",
+      "name": "WhatsApp Trigger",
+      "webhookId": "c0e17ffb-129a-4cca-8ff6-95db8460be2b",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "6erV07cLYXVLzZSz",
+          "name": "WhatsApp OAuthappointment"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "contextWindowLength": 30
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        140,
+        420
+      ],
+      "id": "c908b031-8185-4775-b0a3-1d5c1163c853",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        100
+      ],
+      "id": "4ae25827-2117-49e4-955f-065e97b818fe",
+      "name": "Send message",
+      "webhookId": "7d5b2ead-2025-4720-8fe6-26f956645bbd",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "ARRR5hpPvKJSrYX9",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        420
+      ],
+      "id": "91c14534-cc03-43af-b195-7b63e6ddbb49",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wQ8rJlmjCD5Ej6QB",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "surajmorecombat@gmail.com",
+          "mode": "list",
+          "cachedResultName": "surajmorecombat@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        300,
+        460
+      ],
+      "id": "3db8faf7-3f54-40b4-a8e5-9710cb382d02",
+      "name": "Fetch an appointment",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "ywF5YHYJLrV5Rh8g",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "surajmorecombat@gmail.com",
+          "mode": "list",
+          "cachedResultName": "surajmorecombat@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {
+          "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+          "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        460,
+        460
+      ],
+      "id": "bc8a0326-0a67-4313-879d-980dd8b2614e",
+      "name": "Update an appointment",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "ywF5YHYJLrV5Rh8g",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        460
+      ],
+      "id": "90da5050-09bc-4ec5-8260-fcd932eec5f1",
+      "name": "Send a message in Gmail",
+      "webhookId": "9c80cd4c-8c09-4bc1-a99f-df301fddb7e2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "IuUUFy0LfaCisMLu",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Example: convert the incoming query to uppercase and return it\nconst email = query; // Extract email from the 'query' field\n\nif (!email) {\n  return 'Email is missing or undefined';\n}\n\nconst emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n\nreturn emailRegex.test(email) ? 'valid' : 'invalid';\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        900,
+        460
+      ],
+      "id": "cd69e552-7ecc-4e52-954a-ea9c58f8918c",
+      "name": "validateEmail"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Example input (from previous node)\nconst slot = query;\n\n// Helper: Convert string slot to JS Date objects\nfunction parseSlotToDate(slotStr) {\n  const match = slotStr.match(/([A-Za-z]+), ([A-Za-z]+ \\d{1,2}, \\d{4}): (\\d{2}:\\d{2} [AP]M) - (\\d{2}:\\d{2} [AP]M)/);\n  if (!match) throw new Error(\"Invalid slot format\");\n\n  const [_, day, dateStr, startTimeStr, endTimeStr] = match;\n\n  // Create ISO-like date strings in Asia/Kolkata time\n  const fullStart = `${dateStr} ${startTimeStr} +0530`;\n  const fullEnd = `${dateStr} ${endTimeStr} +0530`;\n\n  const start = new Date(Date.parse(fullStart));\n  const end = new Date(Date.parse(fullEnd));\n\n  return { start, end };\n}\n\n// Parse input slot\nconst { start, end } = parseSlotToDate(slot);\n\n// Busy events list should come from Google Calendar Get Events node\n// For demo/testing purposes, define manually:\nconst busyEvents = [\n  // Example:\n  // { start: '2025-07-11T18:00:00+05:30', end: '2025-07-11T19:00:00+05:30' }\n];\n\n// Check overlap\nconst isOverlapping = busyEvents.some(event => {\n  const busyStart = new Date(event.start);\n  const busyEnd = new Date(event.end);\n  return start < busyEnd && end > busyStart;\n});\n\nreturn isOverlapping ? \"unavailable\" : \"available\";\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        1080,
+        440
+      ],
+      "id": "83afa5d0-60b6-458a-a0a4-a11555b3766f",
+      "name": "validateSlotAvailability"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=# DOCTOR APPOINTMENT RESCHEDULING AI AGENT\n\n## ROLE\nYou are an AI assistant that helps reschedule medical appointments through conversation.\n\n## TOOLS AVAILABLE\n- Google Calendar - Get Events, Find Event, Update Event, Delete Event, Create Event\n- validateEmail, validateSlotAvailability\n- Gmail - Send Rescheduling Confirmation, Send Cancellation Notice\n\n## CRITICAL RULES\n1. **NEVER use memory or assumptions** - ALWAYS fetch from calendar tools\n2. **ALWAYS fetch event_id** when retrieving appointments\n3. **MANDATORY calendar fetch** before showing ANY availability\n4. **Email-only lookup** for finding appointments\n\n## PROCESS\n\n### 1. Find Existing Appointment\n**STEP 1A:** Ask ONLY for patient's email address\n- Message: \"Please provide your email address to locate your appointment\"\n- Do NOT ask for appointment time, date, or other details\n\n**STEP 1B:** Use **Google Calendar - Find Event** tool with correct parameters\n- Search parameter: patient email only\n- **MANDATORY TIME RANGE:** Use Asia/Kolkata timezone\n  - After: Current date - 30 days (to find past/current appointments)\n  - Before: Current date + 365 days (to find future appointments)\n  - Format: YYYY-MM-DDTHH:MM:SS+05:30 (Asia/Kolkata offset)\n- **MANDATORY:** Retrieve event_id along with appointment details\n- Store event_id for future update operations\n\n**STEP 1C:** Present found appointment details to user for confirmation\n- Show: Date, Time, Patient Name, Event ID (internal reference)\n\n### 2. Get Available Slots\n**MANDATORY:** Before showing ANY availability, call **Google Calendar - Get Events** tool\n- **NEVER rely on memory or previous fetches**\n- **ALWAYS fetch fresh calendar data**\n- **MANDATORY TIME RANGE PARAMETERS:**\n  - After: Current time (from {{$now}}) in Asia/Kolkata timezone\n  - Before: Current time + 30 days in Asia/Kolkata timezone\n  - Format: YYYY-MM-DDTHH:MM:SS+05:30\n- Fetch current calendar state every time availability is requested\n\n**Show next 5 available slots:**\n- Working hours: 09:00-12:00, 13:00-17:00 (Asia/Kolkata)\n- 60-minute blocks on the hour\n- Minimum 4 hours from current time\n- Exclude busy times (except current appointment being rescheduled)\n\n### 3. Validate & Reschedule\nWhen user selects new slot:\n- **MANDATORY:** Call **Google Calendar - Get Events** again with correct time range\n  - After: Current time (from {{$now}}) in Asia/Kolkata timezone  \n  - Before: Current time + 30 days in Asia/Kolkata timezone\n  - Format: YYYY-MM-DDTHH:MM:SS+05:30\n- Use **validateSlotAvailability** tool\n- Update via **Google Calendar - Update Event** using stored event_id\n- If Update Event fails, use Delete/Create fallback\n\n### 4. Confirmation\nSend both:\n- Chat confirmation with new appointment details\n- Email confirmation via Gmail tool\n\n## WORKFLOW CONSTRAINTS\n\n### Calendar Fetching Rules:\n- **ALWAYS** call Google Calendar tools before any availability response\n- **NEVER** use cached/remembered appointment data\n- **ALWAYS** fetch fresh data for each availability check\n- **MANDATORY** event_id retrieval and storage\n\n### Email Lookup Rules:\n- **ONLY** request patient email for appointment lookup\n- **DO NOT** ask for appointment time/date during lookup\n- Use email as sole search parameter\n\n### Availability Display Rules:\n- **MANDATORY** fresh calendar fetch before showing slots\n- Timezone: Asia/Kolkata\n- No lunch slots (12:00-13:00)\n- Must validate chosen slots before confirming\n\n## CALENDAR TOOL PARAMETERS\n\n### For Finding Existing Appointments:\n```\nAfter: {{$now}} minus 30 days in Asia/Kolkata timezone\nBefore: {{$now}} plus 365 days in Asia/Kolkata timezone\nFormat: YYYY-MM-DDTHH:MM:SS+05:30\n```\n\n### For Checking Availability:\n```\nAfter: {{$now}} in Asia/Kolkata timezone\nBefore: {{$now}} plus 30 days in Asia/Kolkata timezone  \nFormat: YYYY-MM-DDTHH:MM:SS+05:30\n```\n\n**CRITICAL:** Always use {{$now}} as base time and convert to Asia/Kolkata timezone (+05:30 offset)\n\n## CURRENT TIME\n{{ $now }}\n\n## ERROR HANDLING\n- If email not found: \"No appointment found for this email\"\n- If calendar fetch fails: \"Unable to check calendar, please try again\"\n- If slot unavailable: Re-fetch calendar and show updated availability\n\n## CONVERSATION FLOW EXAMPLE\n1. \"Please provide your email address to locate your appointment\"\n2. [Fetch appointment using email + retrieve event_id]\n3. \"Found your appointment: [details]. Would you like to reschedule?\"\n4. [MANDATORY: Fetch fresh calendar data]\n5. \"Here are available slots: [show 5 options]\"\n6. [When slot selected: Re-fetch calendar + validate + update using event_id]\n7. [Send confirmations]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        440,
+        40
+      ],
+      "id": "7304ce80-813a-4055-bd00-d6365ce915f7",
+      "name": "appointment rescheduled"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        20
+      ],
+      "id": "777d98e8-84bf-4d24-8156-07984abe4a4d",
+      "name": "rescheduling flow",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch an appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update an appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validateEmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validateSlotAvailability": {
+      "ai_tool": [
+        [
+          {
+            "node": "appointment rescheduled",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "appointment rescheduled": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rescheduling flow": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a9200d7c-1969-4e3d-86ea-001a1adec7f4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f184186d4c02e22d3255b8b28044745ef146878e8192b481c9bc731bbb628f1"
+  },
+  "id": "H9lWlmyRkHLuJlPS",
+  "tags": []
+}
