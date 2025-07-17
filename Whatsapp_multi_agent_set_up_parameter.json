@@ -1,0 +1,247 @@
+{
+  "name": "Whatsapp_multi_agent_set_up_parameter",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -512
+      ],
+      "id": "8276a99d-b0bc-4cc0-9da3-7cb962c04d39",
+      "name": "WhatsApp Trigger",
+      "webhookId": "85756be2-2871-4b0f-a578-09a0af17b06a",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "UxPXT4mI1Ff3fZND",
+          "name": "WhatsApp OAuth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "you are an orchestrator tool your \nand also an assitant \nyou will need to call the new workflow\nand feed the ouput parameter in the new workflow tool as your response"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        -624
+      ],
+      "id": "e6d96c6f-eab2-4968-b2af-30c031ae51d7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.messages }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        -320
+      ],
+      "id": "0149e1aa-dcec-40f9-bb00-f4614e18743c",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "description": "call this workflow to send query",
+        "workflowId": {
+          "__rl": true,
+          "value": "nIu7yQOnpvMHnPIA",
+          "mode": "list",
+          "cachedResultName": "sub_multiple_whatsapp_agent_test copy"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reciever_phone": "={{ $json.messages[0].from }}",
+            "output": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('output', ``, 'string') }}",
+            "sender_phone": "={{ $json.metadata.display_phone_number }}",
+            "mode": "whatsapp"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "reciever_phone",
+              "displayName": "reciever_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "mode",
+              "displayName": "mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sender_phone",
+              "displayName": "sender_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        -400
+      ],
+      "id": "015b29bc-1223-4349-a76e-8a8eaf4442b5",
+      "name": "Call n8n Workflow Tool"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -304
+      ],
+      "id": "45377a9d-c9e8-48f8-a167-55e5d80ba750",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7vL7vpg59l3IqdiM",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        -688
+      ],
+      "id": "3e050f73-a8bc-499c-b000-593003859cd8",
+      "name": "Gmail Trigger",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Call n8n Workflow Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "755da7f7-7416-421b-a174-ee4631708129",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17b089a02dd3dc6c436f920004f93fdf333f29c1752617853d332e49f95e96eb"
+  },
+  "id": "XNk1N7ygtOJHHvdm",
+  "tags": []
+}
